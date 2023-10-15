@@ -20,7 +20,7 @@
 # start from debian slim, this image is reasonably small as a starting point
 # for a kubernetes node image, it doesn't contain much (anything?) we don't need
 # this stage will install basic files and packages
-ARG BASE_IMAGE=debian:bullseye-slim
+ARG BASE_IMAGE=ubuntu:jammy-20231004
 FROM $BASE_IMAGE as base
 
 # copy in static files
@@ -104,6 +104,8 @@ COPY --chmod=0755 scripts/third_party/gimme/gimme /usr/local/bin/
 COPY --chmod=0755 scripts/target-cc /usr/local/bin/
 # tools needed at build-time only
 # first ensure we can install packages for both architectures
+COPY files/etc/apt/sources.list.d/arm-sources.list /etc/apt/sources.list.d/
+RUN sed -Ei "s/^deb/deb [arch=amd64]/" /etc/apt/sources.list
 RUN dpkg --add-architecture arm64 && dpkg --add-architecture amd64 \
     && clean-install bash ca-certificates curl git make pkg-config \
     crossbuild-essential-amd64 crossbuild-essential-arm64 \
